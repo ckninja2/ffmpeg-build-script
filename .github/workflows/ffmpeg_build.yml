@@ -1,0 +1,38 @@
+# This is a basic workflow to help you get started with Actions
+
+name: build linux
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-linux:
+    name: build in native linux
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: install libva-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libva-dev
+      - name: build ffmpeg
+        run: |
+          while sleep 300; do echo "=====[ $SECONDS seconds still running ]====="; done &
+          SKIPINSTALL=yes VERBOSE=yes ./build-ffmpeg --build --enable-gpl-and-non-free
+          kill %1
+      - name: check shared library
+        run: |
+          ldd ./workspace/bin/ffmpeg
+      - name: test run ffmepg
+        run: |
+          ./workspace/bin/ffmpeg -buildconf
+      - name: upload 
+        uses: actions/upload-artifact@v3
+        with:
+          name: ffmpeg-binaries
+          path: ./workspace/bin/
