@@ -1,0 +1,32 @@
+name: Build Test for linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: build in native linux
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: install libva-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libva-dev
+
+      - name: build ffmpeg
+        run: |
+          while sleep 300; do echo "=====[ $SECONDS seconds still running ]====="; done &
+          SKIPINSTALL=yes VERBOSE=yes ./build-ffmpeg --build --enable-gpl-and-non-free
+          kill %1
+      - name: check shared library
+        run: |
+          ldd ./workspace/bin/ffmpeg
+      - name: test run ffmepg
+        run: |
+          ./workspace/bin/ffmpeg -buildconf
+      - name: clean up
+        run: |
+          ./build-ffmpeg --cleanup
